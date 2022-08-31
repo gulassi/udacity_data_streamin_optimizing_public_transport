@@ -37,15 +37,14 @@ def configure_connector():
                "connection.user": "cta_admin",
                "connection.password": "chicago",
                "table.whitelist": "stations",
-               "mode": "incrementing.column.name",
+               "mode": "incrementing",
                "incrementing.column.name": "stop_id",
-               "topic.prefix": "com.udacity", # Use namespace as prefix
+               "topic.prefix": "com.udacity.", # Use namespace as prefix
                "poll.interval.ms": "3600000", # Hourly interval should be fine
            }
        }),
     )
 
-    # Ensure a healthy response was given
     resp.raise_for_status()
     logging.debug("connector created successfully")
 
