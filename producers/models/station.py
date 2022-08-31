@@ -33,7 +33,7 @@ class Station(Producer):
             key_schema=Station.key_schema,
             value_schema=Station.value_schema,
             num_partitions=6, # For performance 6 partition should be enough, trains arrive at station rarely. Can be increased if needed
-            num_replicas=2, # There are three Kafka server instances, so replication factor should be lower and at least 2 replicas are needed for high availability
+            num_replicas=2, # There are three Kafka broker instances, so replication factor should be lower and at least 2 replicas are needed for high availability
         )
 
         self.station_id = int(station_id)
