@@ -5,7 +5,7 @@ from os import stat
 import time
 
 
-from confluent_kafka import avro, KafkaException
+from confluent_kafka import avro, KafkaException, KafkaError
 from confluent_kafka.admin import AdminClient, NewTopic
 from confluent_kafka.avro import AvroProducer
 
@@ -33,11 +33,13 @@ class Producer:
         self.num_partitions = num_partitions
         self.num_replicas = num_replicas
         self.broker_properties = {
-            "bootstrap_servers": "PLAINTEXT://localhost:9092,PLAINTEXT://localhost:9093,PLAINTEXT://localhost:9094",
-            "auto_create_topics": False,
-            "schema_registry_url": "http://localhost:8081",
-            "compression_type": "gzip",
+            "bootstrap.servers": "PLAINTEXT://localhost:9092",
+            "schema.registry.url": "http://localhost:8081",
         }
+        self.admin_client_properties = {
+            "bootstrap.servers": "PLAINTEXT://localhost:9092"
+        }
+        self.admin_client = AdminClient(self.admin_client_properties)
 
         # If the topic does not already exist, try to create it
         if self.topic_name not in Producer.existing_topics:
@@ -48,27 +50,30 @@ class Producer:
 
     def create_topic(self):
         """Creates the producer topic if it does not already exist"""
-        logger.info("starting topic creation")
-        admin_client = AdminClient(self.broker_properties["bootstrap_servers"])
+        logger.debug("starting topic creation")
         new_topic = [NewTopic(self.topic_name, num_partitions=self.num_partitions, replication_factor=self.num_replicas)]
-        status = admin_client.create_topics(new_topic)
+        status = self.admin_client.create_topics(new_topic)
         for topic, f in status.items():
             try:
                 f.result()
                 logger.info(f"topic {topic} created")
             except KafkaException as e:
-                logger.error(f"failed to create topic {self.topic_name}: {e.args[0]}")
+                if e.args[0].code() == KafkaError.TOPIC_ALREADY_EXISTS:
+                    logger.info("topic already exists")
+                else:
+                    logger.error(f"failed to create topic {self.topic_name}: {e.args[0]}")
 
-        logger.info("completed topic creation")
+        logger.debug("completed topic creation")
+
 
     def time_millis(self):
         return int(round(time.time() * 1000))
 
     def close(self):
         """Prepares the producer for exit by cleaning up the producer"""
-        logger.info("stopping producer")
+        logger.debug("stopping producer")
         self.producer.flush()
-        logger.info("producer stopped")
+        logger.debug("producer stopped")
 
 
     def time_millis(self):

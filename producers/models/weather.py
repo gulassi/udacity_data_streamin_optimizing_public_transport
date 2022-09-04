@@ -32,11 +32,11 @@ class Weather(Producer):
 
     def __init__(self, month):
         super().__init__(
-            "weather_report",
+            "com.udacity.weather_report",
             key_schema=Weather.key_schema,
             value_schema=Weather.value_schema,
             num_partitions=6, # For performance 6 partition should be enough, weather updates happen quite seldom. Can be increased if needed
-            num_replicas=2, # There are three Kafka broker instances, so replication factor should be lower and at least 2 replicas are needed for high availability
+            num_replicas=1, # There is only one broker active
         )
 
         self.status = Weather.status.sunny
@@ -69,25 +69,34 @@ class Weather(Producer):
 
         logger.info("sending weather update")
         resp = requests.post(
-           f"{Weather.rest_proxy_url}/topics/{Weather.topic_name}",
-           headers={"Content-Type": "application/vnd.kafka.avro.v2+json"},
-           data=json.dumps(
-               {
-                   "key_schema": Weather.key_schema,
-                   "value_schema": Weather.value_schema,
+            f"{Weather.rest_proxy_url}/topics/com.udacity.weather_report",
+            headers={
+                "Content-Type": "application/vnd.kafka.avro.v2+json",
+                "Accept": "application/vnd.kafka.v2+json"
+            },
+            data=json.dumps(
+                {
+                    "key_schema": json.dumps(Weather.key_schema),
+                    "value_schema": json.dumps(Weather.value_schema),
                     "records": [
                         {
-                            "key": datetime.timestamp(),
+                            "key": {
+                                "timestamp": int(round(datetime.now().timestamp()))
+                            },
                             "value": {
-                                "temperature": Weather.temp,
-                                "status": Weather.status
+                                "temperature": self.temp,
+                                "status": self.status
                             }
                         }
                     ]
-               }
-           ),
+                }
+            ),
         )
-        resp.raise_for_status()
+        try:
+            resp.raise_for_status()
+        except:
+            logger.error(f"{resp.content}")
+            logger.info(f"{resp.request.body}")
 
         logger.debug(
             "sent weather data to kafka, temp: %s, status: %s",

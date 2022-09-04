@@ -27,13 +27,13 @@ class Station(Producer):
             .replace("'", "")
         )
 
-        topic_name = f"{station_name}.arrivals"
+        topic_name = f"com.udacity.{station_name}.arrivals"
         super().__init__(
             topic_name,
             key_schema=Station.key_schema,
             value_schema=Station.value_schema,
             num_partitions=6, # For performance 6 partition should be enough, trains arrive at station rarely. Can be increased if needed
-            num_replicas=2, # There are three Kafka broker instances, so replication factor should be lower and at least 2 replicas are needed for high availability
+            num_replicas=1, # There is only one broker active
         )
 
         self.station_id = int(station_id)
@@ -52,10 +52,10 @@ class Station(Producer):
             key={"timestamp": self.time_millis()},
             value={
                 "station_id": self.station_id,
-                "train_id": train,
+                "train_id": train.train_id,
                 "direction": direction,
-                "line": self.color,
-                "train_status": "arrival",
+                "line": self.color.name,
+                "train_status": train.status.name,
                 "prev_station_id": prev_station_id,
                 "prev_direction": prev_direction
             },

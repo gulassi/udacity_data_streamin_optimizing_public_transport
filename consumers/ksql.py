@@ -22,15 +22,24 @@ KSQL_URL = "http://localhost:8088"
 #       Make sure to set the value format to JSON
 
 KSQL_STATEMENT = """
-CREATE TABLE turnstile (
-    ???
+CREATE TABLE IF NOT EXISTS turnstile (
+    station_id INT,
+    station_name VARCHAR,
+    line VARCHAR
 ) WITH (
-    ???
+    kafka_topic='com.udacity.turnstile',
+    value_format='avro',
+    key='station_id'
 );
 
-CREATE TABLE turnstile_summary
-WITH (???) AS
-    ???
+CREATE TABLE IF NOT EXISTS turnstile_summary
+WITH (
+    kafka_topic='com.udacity.turnstile_summary',
+    value_format='json',
+    partitions = 12
+) AS 
+    SELECT COUNT(*) AS count, station_id FROM turnstile
+    GROUP BY station_id;
 """
 
 
@@ -53,7 +62,10 @@ def execute_statement():
     )
 
     # Ensure that a 2XX status code was returned
-    resp.raise_for_status()
+    try:
+        resp.raise_for_status()
+    except:
+        logger.error(f"{resp.content}")
 
 
 if __name__ == "__main__":
