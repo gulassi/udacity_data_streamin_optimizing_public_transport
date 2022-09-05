@@ -11,30 +11,20 @@ logger = logging.getLogger(__name__)
 
 
 KSQL_URL = "http://localhost:8088"
-
-#
-# TODO: Complete the following KSQL statements.
-# TODO: For the first statement, create a `turnstile` table from your turnstile topic.
-#       Make sure to use 'avro' datatype!
-# TODO: For the second statment, create a `turnstile_summary` table by selecting from the
-#       `turnstile` table and grouping on station_id.
-#       Make sure to cast the COUNT of station id to `count`
-#       Make sure to set the value format to JSON
-
 KSQL_STATEMENT = """
-CREATE TABLE IF NOT EXISTS turnstile (
+CREATE TABLE IF NOT EXISTS TURNSTILE (
     station_id INT,
     station_name VARCHAR,
     line VARCHAR
 ) WITH (
-    kafka_topic='com.udacity.turnstile',
+    kafka_topic='TURNSTILE',
     value_format='avro',
     key='station_id'
 );
 
-CREATE TABLE IF NOT EXISTS turnstile_summary
+CREATE TABLE IF NOT EXISTS TURNSTILE_SUMMARY
 WITH (
-    kafka_topic='com.udacity.turnstile_summary',
+    kafka_topic='TURNSTILE_SUMMARY',
     value_format='json',
     partitions = 12
 ) AS 

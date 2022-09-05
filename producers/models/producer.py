@@ -59,7 +59,7 @@ class Producer:
                 logger.info(f"topic {topic} created")
             except KafkaException as e:
                 if e.args[0].code() == KafkaError.TOPIC_ALREADY_EXISTS:
-                    logger.info("topic already exists")
+                    logger.info(f"topic {self.topic_name} already exists")
                 else:
                     logger.error(f"failed to create topic {self.topic_name}: {e.args[0]}")
 

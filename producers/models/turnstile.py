@@ -28,7 +28,7 @@ class Turnstile(Producer):
         )
 
         super().__init__(
-            "com.udacity.turnstile",
+            "TURNSTILE",
             key_schema=Turnstile.key_schema,
             value_schema=Turnstile.value_schema,
             num_partitions=12, # For performance 12 partition should be enough, passengers arrive at stations often. Can be increased if needed

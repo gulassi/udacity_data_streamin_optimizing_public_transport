@@ -39,7 +39,7 @@ def configure_connector():
                "table.whitelist": "stations",
                "mode": "incrementing",
                "incrementing.column.name": "stop_id",
-               "topic.prefix": "com.udacity.", # Use namespace as prefix
+               "topic.prefix": "org.chicago.cta.", # Use namespace as prefix
                "poll.interval.ms": "3600000", # Hourly interval should be fine
                "transforms": "createKey",
                "transforms.createKey.type": "org.apache.kafka.connect.transforms.ValueToKey",

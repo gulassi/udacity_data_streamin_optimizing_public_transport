@@ -32,7 +32,7 @@ class Weather(Producer):
 
     def __init__(self, month):
         super().__init__(
-            "com.udacity.weather_report",
+            "org.chicago.cta.weather.v1",
             key_schema=Weather.key_schema,
             value_schema=Weather.value_schema,
             num_partitions=6, # For performance 6 partition should be enough, weather updates happen quite seldom. Can be increased if needed
@@ -67,9 +67,9 @@ class Weather(Producer):
     def run(self, month):
         self._set_weather(month)
 
-        logger.info("sending weather update")
+        logger.debug("sending weather update")
         resp = requests.post(
-            f"{Weather.rest_proxy_url}/topics/com.udacity.weather_report",
+            f"{Weather.rest_proxy_url}/topics/org.chicago.cta.weather.v1",
             headers={
                 "Content-Type": "application/vnd.kafka.avro.v2+json",
                 "Accept": "application/vnd.kafka.v2+json"
@@ -85,7 +85,7 @@ class Weather(Producer):
                             },
                             "value": {
                                 "temperature": self.temp,
-                                "status": self.status
+                                "status": self.status.name
                             }
                         }
                     ]
@@ -96,7 +96,6 @@ class Weather(Producer):
             resp.raise_for_status()
         except:
             logger.error(f"{resp.content}")
-            logger.info(f"{resp.request.body}")
 
         logger.debug(
             "sent weather data to kafka, temp: %s, status: %s",
